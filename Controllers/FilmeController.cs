@@ -21,7 +21,14 @@ public class FilmeController : ControllerBase
 
     }
 
+/// <summary>
+/// Adiciona um filme ao Banco de Dados
+/// </summary>
+/// <param name="filmeDTO">Objeto com os campos necessários para criação de filme</param>
+/// <returns>IActionResult</returns>
+/// <response code="201"> Caso a inserção seja feita com sucesso</response>
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created )]
     public async Task<IActionResult> AdcionaFilme([FromBody] CreateFilmeDTO filmeDTO)
     {
         Filme filme = _mapper.Map<Filme>(filmeDTO);
@@ -33,14 +40,11 @@ public class FilmeController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> RecuperaFilmes()
+    public IEnumerable<ReadFilmeDTO> RecuperaFilmes([FromQuery] int skip = 0, [FromQuery] int take = 50 )
     {
-        var filmes = await _dbcontext.Filmes.AsNoTracking().ToListAsync();
+        
 
-        if (filmes == null)
-            return NotFound("Nenhum filme encontrado");
-
-        return Ok(filmes);
+        return  _mapper.Map<List<ReadFilmeDTO>>(_dbcontext.Filmes.Skip(skip).Take(take));
 
     }
 
@@ -50,7 +54,8 @@ public class FilmeController : ControllerBase
         var filme = await _dbcontext.Filmes.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
         if (filme == null)
             return NotFound();
-        return Ok(filme);
+        var filmeDTO = _mapper.Map<ReadFilmeDTO>(filme);
+        return Ok(filmeDTO);
     }
     [HttpPut("{id}")]
     public async Task<IActionResult> AtualizaFilme(int id, [FromBody] UpdateFilmeDTO filmeDTO)
@@ -69,7 +74,7 @@ public class FilmeController : ControllerBase
         var filme = await _dbcontext.Filmes.FirstOrDefaultAsync(filme => filme.Id == id);
 
         if (filme is null) return NotFound();
-        
+
         var filmeParaAtualizar = _mapper.Map<UpdateFilmeDTO>(filme);
 
         patch.ApplyTo(filmeParaAtualizar, ModelState);
@@ -79,6 +84,19 @@ public class FilmeController : ControllerBase
         }
         _mapper.Map(filmeParaAtualizar, filme);
         await _dbcontext.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeletaFilme(int id)
+    {
+        var filme = await _dbcontext.Filmes.FirstOrDefaultAsync(filme => filme.Id == id);
+
+        if (filme is null) return NotFound();
+
+        _dbcontext.Remove(filme);
+        _dbcontext.SaveChangesAsync();
+
         return NoContent();
     }
 }

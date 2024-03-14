@@ -3,6 +3,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <UserSecretsId>c494912f-6676-4283-ac05-4a3289a50a39</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
